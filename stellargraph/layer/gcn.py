@@ -192,6 +192,8 @@ class GraphConvolution(Layer):
 
         # Calculate the layer operation of GCN
         A = As[0]
+        print("entry 1")
+        print(A)
         if K.is_sparse(A):
             # FIXME(#1222): batch_dot doesn't support sparse tensors, so we special case them to
             # only work with a single batch element (and the adjacency matrix without a batch
@@ -408,6 +410,7 @@ class GCN:
 
         # Convert input indices & values to a sparse matrix
         if self.use_sparse:
+            print("entry 2")
             A_indices, A_values = As
             Ainput = [
                 SqueezedSparseConversion(
@@ -415,6 +418,7 @@ class GCN:
                 )([A_indices, A_values])
             ]
         else:
+            print("entry 3")
             Ainput = As
 
         # TODO: Support multiple matrices?
@@ -428,16 +432,21 @@ class GCN:
             # For GCN, if no preprocessing has been done, we apply the preprocessing layer to perform that.
             Ainput = [self.graph_norm_layer(Ainput[0])]
         for layer in self._layers:
+            print("entry 4")
             if isinstance(layer, GraphConvolution):
                 # For a GCN layer add the matrix
+                print("entry 5")
                 h_layer = layer([h_layer] + Ainput)
             else:
+                print("entry 6")
                 # For other (non-graph) layers only supply the input tensor
                 h_layer = layer(h_layer)
 
         # only return data for the requested nodes
         h_layer = GatherIndices(batch_dims=1)([h_layer, out_indices])
-
+        print("entry 7")
+        print(h_layer)
+        
         return h_layer
 
     def in_out_tensors(self, multiplicity=None):
